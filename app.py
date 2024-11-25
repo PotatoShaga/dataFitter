@@ -4,12 +4,19 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 from scipy.interpolate import make_interp_spline #actually maybe lines not curving isnt a problem
+from scipy import stats
 
 #Questions: is state session/saving needed for fully marks? how many equations are needed? is this graph enough info?
 #and just local host is fine?
+#Do we need to use least squares? scipy uses method of moments, to get different optimisation method would have to recode from scratch
+
+#NO state session necessary for grades
+#Local host is fine
+#can add method of least squares by calling its function just for that, but for like scipy function like curve_fit using moments, thats fine. So i dont need to add least squares
 
 #st.radio for picking fit
 "Input values manually or attach csv"
+"Csv data should have no column labels and only 2 columns. Should be a Nx2 array"
 cols = st.columns(3,vertical_alignment="top") #this is a action. makes 3 columnns (and I fill them) after the above sentence
 
 with cols[0]: #1st column, empty_df
@@ -40,7 +47,7 @@ with cols[1]: #2nd column, file dropbox
             if csv == None:
                 "NO csv attached"
             else:
-                df1 = pd.read_csv("test.csv", header=None)
+                df1 = pd.read_csv(csv, header=None)
                 df1.columns = ["x", "y"]
                 df = df1 #once submit button is pressed the csv is passed to df
                 using_csv_data = True
@@ -54,7 +61,7 @@ with cols[2]: #3rd column, df to be fit
 
 #LOWER PORTION: radio fit selection and visual graph
 #Excel has trendlines: exponential, linear, logarithmic, polynomial (deg N), power
-fit_selection = st.radio(label="Choose your fit:", options=["Linear", "Polynomial", "Exponential", "Logarithmic"])
+fit_selection = st.radio(label="Choose your fit:", options=["Linear", "Polynomial", "Exponential", "Logarithmic", "Normal Distribution", "Exponential Distribution"])
 
 if fit_selection == "Linear":
     trendline = np.polyfit(df["x"], df["y"], deg=1) #generates coefficients for linear function, m and b
@@ -67,6 +74,12 @@ if fit_selection == "Linear":
 
     equation = f"{round(trendline[0], 5)}x + {round(trendline[1], 5)}"
     equation
+
+    error = trendline_y_values - df["y"]
+    average_error = np.mean(error)
+    max_error = np.max(error)
+    f"Average error: {average_error}"
+    f"Max error: {max_error}"
 
 elif fit_selection == "Polynomial":
     degree = st.slider("Degree:", min_value = 2, max_value = 10, value=2)
@@ -88,6 +101,12 @@ elif fit_selection == "Polynomial":
             equation += f"({list(reversed(trendline))[x-1]})x^{x-1} + "
     equation
 
+    error = trendline_y_values - df["y"]
+    average_error = np.mean(error)
+    max_error = np.max(error)
+    f"Average error: {average_error}"
+    f"Max error: {max_error}"
+
 elif fit_selection == "Exponential":
     def exponential(x, A, b, c):
         y = A * np.exp(b*x) + c #np.exp is a function that takes b,x as input
@@ -105,6 +124,12 @@ elif fit_selection == "Exponential":
     equation = f"y = {round(coeffs[0][0], 5)} * e^({round(coeffs[0][1], 5)}x) + ({round(coeffs[0][2], 5)})"
     equation
 
+    error = trendline_y_values - df["y"]
+    average_error = np.mean(error)
+    max_error = np.max(error)
+    f"Average error: {average_error}"
+    f"Max error: {max_error}"
+
 elif fit_selection == "Logarithmic":
     def logarithmic(x, A, b):
         y = A * np.log(x) + b #np.exp is a function that takes b,x as input
@@ -121,3 +146,30 @@ elif fit_selection == "Logarithmic":
     equation = f"y = {round(coeffs[0][0], 5)} * log(x) + ({round(coeffs[0][1], 5)})"
     equation
 
+    error = trendline_y_values - df["y"]
+    average_error = np.mean(error)
+    max_error = np.max(error)
+    f"Average error: {average_error}"
+    f"Max error: {max_error}"
+    
+elif fit_selection == "Normal Distribution":
+    distribution = stats.norm
+    fit = stats.fit(distribution, df["x"])
+    fit.plot()
+    st.pyplot(plt)
+
+    mean, std = distribution.fit(df["x"])
+    f"mean: {mean}"
+    f"std: {std}"
+    f"var: {std**2}"
+
+elif fit_selection == "Exponential Distribution":
+    distribution = stats.expon
+    fit = stats.fit(distribution, df["x"])
+    fit.plot()
+    st.pyplot(plt)
+
+    mean, std = distribution.fit(df["x"])
+    f"mean: {mean}"
+    f"std: {std}"
+    f"var: {std**2}"

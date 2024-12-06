@@ -1,0 +1,2 @@
+This is a streamlit app which takes in data either manually or by a csv, and then graphs it in one of 4 graphs (linear, polynomial, expontential, and logarithmic) or one of 2 distributions (normal and exponential distribution). 
+The information is fit on the graph, and information about the curve's equation/accuracy is provided. The app fits the data with numpy and scipys functions and then graphs it using matplotlib. The code can be run by typing <streamlit run app.py> into your console. 
